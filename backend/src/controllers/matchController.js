@@ -45,8 +45,9 @@ exports.getMatch = async (req, res) => {
 // POST /api/matches/:id/submit-result
 exports.submitResult = async (req, res) => {
   try {
-    const { scoreA, scoreB } = req.body;
+    const { scoreA, scoreB, screenshot } = req.body;
     if (scoreA === undefined || scoreB === undefined) return res.status(400).json({ message: 'Both scores required' });
+    if (!screenshot) return res.status(400).json({ message: 'Result screenshot is required' });
     if (scoreA < 0 || scoreB < 0) return res.status(400).json({ message: 'Scores must be non-negative' });
 
     const match = await Match.findById(req.params.id)
@@ -74,6 +75,7 @@ exports.submitResult = async (req, res) => {
 
     match.scoreA = Number(scoreA);
     match.scoreB = Number(scoreB);
+    match.screenshot = screenshot;
     match.submittedBy = req.user._id;
     match.playedAt = new Date();
 

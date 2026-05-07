@@ -23,6 +23,7 @@ const matchSchema = new mongoose.Schema({
   scheduledAt: { type: Date, default: null },
   playedAt: { type: Date, default: null },
   submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  screenshot: { type: String, default: null },
   resultNotes: { type: String, default: '' },
 }, { timestamps: true });
 
