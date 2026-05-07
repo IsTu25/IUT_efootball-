@@ -7,7 +7,16 @@ const morgan = require('morgan');
 const app = express();
 
 // Middleware
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5001'], credentials: true }));
+app.use(cors({ 
+  origin: [
+    'http://localhost:5173', 
+    'http://localhost:3000', 
+    'http://localhost:5001',
+    'https://iut-efootball.vercel.app',
+    'https://iut-efootball-git-main-istu25.vercel.app' // Vercel preview branch
+  ], 
+  credentials: true 
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
