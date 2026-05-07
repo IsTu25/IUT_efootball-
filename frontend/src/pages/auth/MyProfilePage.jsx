@@ -219,15 +219,13 @@ export default function MyProfilePage() {
                 <Smartphone size={13} style={{ color: 'var(--accent-blue)' }} />
                 Gaming Device *
               </label>
-              <select
+              <input
                 id="profile-device"
-                className="select"
+                className="input"
+                placeholder="e.g. iPhone 15 Pro, PS5, PC"
                 value={form.deviceName}
                 onChange={e => set('deviceName', e.target.value)}
-              >
-                <option value="">Select your device...</option>
-                {DEVICES.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
+              />
             </div>
 
             {/* Bio */}

@@ -17,6 +17,7 @@ function PlayerModal({ player, onClose, onSaved }) {
     password: '',
     position: player?.position || 'CM',
     role: player?.role || 'player',
+    deviceName: player?.deviceName || '',
   });
   const [saving, setSaving] = useState(false);
   const { user: me } = useAuthStore();
@@ -87,6 +88,16 @@ function PlayerModal({ player, onClose, onSaved }) {
                 <option value="admin">Admin</option>
               </select>
             </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Gaming Device</label>
+            <input 
+              className="input" 
+              placeholder="e.g. PS5, PC, Mobile" 
+              value={form.deviceName} 
+              onChange={e => setForm({ ...form, deviceName: e.target.value })} 
+            />
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
