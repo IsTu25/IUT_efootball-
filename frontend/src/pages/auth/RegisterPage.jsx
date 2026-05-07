@@ -71,6 +71,13 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!form.name.trim()) { toast.error('Name is required'); return; }
     if (!form.email.trim()) { toast.error('Email is required'); return; }
+    
+    // Gmail validation
+    if (!form.email.toLowerCase().endsWith('@gmail.com')) {
+      toast.error('Only Gmail addresses (@gmail.com) are allowed for registration');
+      return;
+    }
+
     if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setStep(2);
   };

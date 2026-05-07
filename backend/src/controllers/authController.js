@@ -10,6 +10,10 @@ exports.register = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email and password are required' });
     }
+    // Gmail validation
+    if (!email.toLowerCase().endsWith('@gmail.com')) {
+      return res.status(400).json({ message: 'Only Gmail addresses are allowed for registration' });
+    }
     if (password.length < 6) {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }

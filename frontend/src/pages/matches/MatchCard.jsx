@@ -222,7 +222,9 @@ export default function MatchCard({ match, onUpdate }) {
 
         {/* Team A */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 2, minWidth: 150 }}>
-          <Avatar user={match.teamA?.captain} size={36} />
+          <div onClick={(e) => { e.stopPropagation(); navigate(`/players/${match.teamA?.captain?._id || match.teamA?.captain}`); }}>
+            <Avatar user={match.teamA?.captain} size={36} />
+          </div>
           <span style={{ fontWeight: 700, fontSize: '1rem', color: isCompleted && match.scoreA > match.scoreB ? 'var(--accent-cyan)' : 'var(--text-primary)' }}>
             {match.teamA?.name}
           </span>
@@ -246,7 +248,9 @@ export default function MatchCard({ match, onUpdate }) {
 
         {/* Team B */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 2, minWidth: 150, flexDirection: 'row-reverse' }}>
-          <Avatar user={match.teamB?.captain} size={36} />
+          <div onClick={(e) => { e.stopPropagation(); navigate(`/players/${match.teamB?.captain?._id || match.teamB?.captain}`); }}>
+            <Avatar user={match.teamB?.captain} size={36} />
+          </div>
           <span style={{ fontWeight: 700, fontSize: '1rem', textAlign: 'right', color: isCompleted && match.scoreB > match.scoreA ? 'var(--accent-cyan)' : 'var(--text-primary)' }}>
             {match.teamB?.name}
           </span>
