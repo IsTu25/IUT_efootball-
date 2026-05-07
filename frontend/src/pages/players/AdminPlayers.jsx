@@ -16,8 +16,11 @@ function PlayerModal({ player, onClose, onSaved }) {
     email: player?.email || '',
     password: '',
     position: player?.position || 'CM',
+    role: player?.role || 'player',
   });
   const [saving, setSaving] = useState(false);
+  const { user: me } = useAuthStore();
+  const isSelf = me?._id === player?._id;
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -40,15 +43,15 @@ function PlayerModal({ player, onClose, onSaved }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 700 }}>
+    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1000 }}>
+      <div className="modal glass-card animate-fadeIn" style={{ maxWidth: 440, padding: 32 }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
             {isEdit ? 'Edit Player' : 'Add New Player'}
           </h2>
           <button onClick={onClose} className="btn btn-ghost" style={{ padding: '6px', borderRadius: 8 }}><X size={18} /></button>
         </div>
-        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="form-group">
             <label className="form-label">Full Name</label>
             <input id="player-name" className="input" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
@@ -63,11 +66,27 @@ function PlayerModal({ player, onClose, onSaved }) {
               <input id="player-password" type="password" className="input" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
             </div>
           )}
-          <div className="form-group">
-            <label className="form-label">Position</label>
-            <select id="player-position" className="select" value={form.position} onChange={e => setForm({ ...form, position: e.target.value })}>
-              {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Position</label>
+              <select id="player-position" className="select" value={form.position} onChange={e => setForm({ ...form, position: e.target.value })}>
+                {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Role</label>
+              <select 
+                id="player-role" 
+                className="select" 
+                value={form.role} 
+                onChange={e => setForm({ ...form, role: e.target.value })}
+                disabled={isSelf}
+                style={isSelf ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+              >
+                <option value="player">Player</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>Cancel</button>

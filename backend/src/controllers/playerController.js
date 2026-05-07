@@ -72,10 +72,10 @@ exports.createPlayer = async (req, res) => {
 // PUT /api/players/:id (admin only)
 exports.updatePlayer = async (req, res) => {
   try {
-    const { name, email, position, isActive, photo } = req.body;
+    const { name, email, position, isActive, photo, role } = req.body;
     const player = await User.findByIdAndUpdate(
       req.params.id,
-      { name, email, position, isActive, photo },
+      { name, email, position, isActive, photo, role },
       { new: true, runValidators: true }
     );
     if (!player) return res.status(404).json({ message: 'Player not found' });
