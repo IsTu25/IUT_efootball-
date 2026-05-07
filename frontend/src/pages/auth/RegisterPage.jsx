@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
 import { Camera, User, Gamepad2, Smartphone, ChevronRight, ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { POSITIONS } from '../../utils/constants';
+import api from '../../api/client';
 
 const DEVICES = ['PS5', 'PS4', 'Xbox Series X/S', 'Xbox One', 'PC', 'Mobile (iOS)', 'Mobile (Android)', 'Nintendo Switch'];
 
@@ -89,21 +90,15 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, photo: photoBase64 }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Registration failed');
-
+      const { data } = await api.post('/auth/register', { ...form, photo: photoBase64 });
+      
       // Auto-login after registration
       localStorage.setItem('token', data.token);
       useAuthStore.setState({ user: data.user, token: data.token });
       toast.success(`Welcome to the club, ${data.user.name}! 🎉`);
       navigate('/dashboard');
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
