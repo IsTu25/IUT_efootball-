@@ -6,7 +6,17 @@ const bcrypt = require('bcryptjs');
 // GET /api/players
 exports.getPlayers = async (req, res) => {
   try {
-    const players = await User.find({ role: 'player', isActive: true }).sort({ name: 1 });
+    const { search } = req.query;
+    let query = { role: 'player', isActive: true };
+    
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { playerId: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const players = await User.find(query).sort({ name: 1 });
     res.json(players);
   } catch (err) {
     res.status(500).json({ message: err.message });

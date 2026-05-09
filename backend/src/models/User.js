@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
 
   joinDate: { type: Date, default: Date.now },
   isActive: { type: Boolean, default: true },
+  googleId: { type: String, default: null },
 }, { timestamps: true });
 
 userSchema.pre('save', async function () {

@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { 
   expiresIn: process.env.JWT_EXPIRE || '7d' 
@@ -125,5 +128,45 @@ exports.changePassword = async (req, res) => {
     res.json({ message: 'Password changed successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/auth/google-login
+exports.googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ message: 'Google credential is required' });
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user if they don't exist
+      user = await User.create({
+        name,
+        email,
+        password: Math.random().toString(36).slice(-10), // Random password for OAuth users
+        photo: picture,
+        role: 'player',
+        profileCompleted: false, // Force them to finish profile
+        googleId,
+      });
+    }
+
+    if (!user.isActive) return res.status(403).json({ message: 'Account deactivated' });
+
+    const token = signToken(user._id);
+    res.json({ token, user });
+  } catch (err) {
+    console.error('Google Auth Error:', err);
+    res.status(500).json({ message: 'Google Authentication failed' });
   }
 };

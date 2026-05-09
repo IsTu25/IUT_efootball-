@@ -10,20 +10,22 @@ import { ArrowLeft, Users, Trophy, Swords, Grid3x3, TableProperties, X } from 'l
 import GroupTable from '../standings/GroupTable';
 import KnockoutBracket from '../bracket/KnockoutBracket';
 import MatchCard from '../matches/MatchCard';
+import SearchablePlayerInput from '../../components/common/SearchablePlayerInput';
 import toast from 'react-hot-toast';
 
 const TABS = ['Overview', 'Groups & Standings', 'Matches', 'Knockout Bracket'];
 
 function RegisterTeamModal({ tournament, onClose, onRegistered }) {
+  const { user: me } = useAuthStore();
   const isSolo = tournament.teamSize === 1;
   const [teamName, setTeamName] = useState('');
-  const [playerIds, setPlayerIds] = useState(Array(tournament.teamSize - 1).fill(''));
+  const [selectedPlayers, setSelectedPlayers] = useState(Array(tournament.teamSize - 1).fill(null));
   const [saving, setSaving] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!isSolo && playerIds.some(id => !id.trim())) {
-      toast.error('Please enter all Player IDs to invite');
+    if (!isSolo && selectedPlayers.some(p => !p)) {
+      toast.error('Please select all players for your team');
       return;
     }
     setSaving(true);
@@ -31,7 +33,7 @@ function RegisterTeamModal({ tournament, onClose, onRegistered }) {
       await api.post('/teams/register', {
         tournamentId: tournament._id,
         name: teamName,
-        invitedPlayerIds: isSolo ? [] : playerIds.map(id => id.trim())
+        invitedPlayerIds: isSolo ? [] : selectedPlayers.map(p => p.playerId)
       });
       toast.success(isSolo ? 'Registered successfully!' : 'Team created and invites sent!');
       onRegistered();
@@ -43,42 +45,66 @@ function RegisterTeamModal({ tournament, onClose, onRegistered }) {
     }
   };
 
+  const handleSelectPlayer = (idx, player) => {
+    const newPlayers = [...selectedPlayers];
+    newPlayers[idx] = player;
+    setSelectedPlayers(newPlayers);
+  };
+
+  const removePlayer = (idx) => {
+    const newPlayers = [...selectedPlayers];
+    newPlayers[idx] = null;
+    setSelectedPlayers(newPlayers);
+  };
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.25rem', fontWeight: 700 }}>
-            {isSolo ? 'Register for Tournament' : 'Create & Register Team'}
+    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1000 }}>
+      <div className="modal glass-card animate-fadeIn" style={{ maxWidth: 500, padding: 32 }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+            {isSolo ? 'Register' : 'Create Team'}
           </h2>
           <button onClick={onClose} className="btn btn-ghost" style={{ padding: 6, borderRadius: 8 }}><X size={18} /></button>
         </div>
-        <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {!isSolo && (
             <div className="form-group">
-              <label className="form-label">Team Name (Optional)</label>
+              <label className="form-label">Team Name</label>
               <input className="input" placeholder="e.g. Dream Team" value={teamName} onChange={e => setTeamName(e.target.value)} />
             </div>
           )}
-          {!isSolo && (
-            <div style={{ padding: '12px 14px', background: 'rgba(59,130,246,0.08)', borderRadius: 10, border: '1px solid rgba(59,130,246,0.2)', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 8 }}>
-              This is a {tournament.teamSize}v{tournament.teamSize} tournament. Invite {tournament.teamSize - 1} more players using their Unique Player IDs (e.g., #ABCD123).
-            </div>
-          )}
-          {!isSolo && playerIds.map((val, idx) => (
+          
+          {!isSolo && selectedPlayers.map((player, idx) => (
             <div className="form-group" key={idx}>
-              <label className="form-label">Player {idx + 2} ID</label>
-              <input className="input" placeholder="e.g. ABCD123" value={val} 
-                onChange={e => {
-                  const newIds = [...playerIds];
-                  newIds[idx] = e.target.value;
-                  setPlayerIds(newIds);
-                }} required />
+              <label className="form-label">Player {idx + 2}</label>
+              {player ? (
+                <div style={{ 
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', 
+                  background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid var(--border)' 
+                }}>
+                  <Avatar user={player} size={30} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{player.name}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{player.playerId}</div>
+                  </div>
+                  <button type="button" onClick={() => removePlayer(idx)} className="btn btn-ghost" style={{ padding: 4, borderRadius: 6 }}>
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <SearchablePlayerInput 
+                  onSelect={(p) => handleSelectPlayer(idx, p)}
+                  placeholder={`Search for teammate ${idx + 2}...`}
+                  excludeIds={[me._id, me.playerId, ...selectedPlayers.filter(p => p).map(p => p._id), ...selectedPlayers.filter(p => p).map(p => p.playerId)]}
+                />
+              )}
             </div>
           ))}
-          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+
+          <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
             <button type="submit" className="btn btn-primary" disabled={saving} style={{ flex: 2, justifyContent: 'center' }}>
-              {saving ? 'Processing...' : isSolo ? 'Register Now' : 'Send Invites & Create'}
+              {saving ? 'Processing...' : isSolo ? 'Register Now' : 'Create Team & Invite'}
             </button>
           </div>
         </form>

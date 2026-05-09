@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/authStore';
 import { PageLoader } from './components/common/LoadingSpinner';
@@ -16,6 +16,44 @@ import TournamentDetail from './pages/tournaments/TournamentDetail';
 import MatchesPage from './pages/matches/MatchesPage';
 import Leaderboard from './pages/standings/Leaderboard';
 import NotificationsPage from './pages/notifications/NotificationsPage';
+import { AlertCircle, ArrowRight } from 'lucide-react';
+
+function ProfileAlert() {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+
+  if (!user || user.profileCompleted) return null;
+
+  return (
+    <div style={{
+      background: 'rgba(245, 158, 11, 0.1)',
+      borderBottom: '1px solid rgba(245, 158, 11, 0.2)',
+      padding: '8px 16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+      position: 'relative',
+      zIndex: 50,
+      animation: 'slideDown 0.5s ease-out'
+    }}>
+      <AlertCircle size={14} style={{ color: '#f59e0b' }} />
+      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#f59e0b' }}>
+        Your profile is incomplete! Add your eFootball ID and Gaming Device to join tournaments.
+      </span>
+      <button 
+        onClick={() => navigate('/my-profile')}
+        style={{
+          background: '#f59e0b', color: '#000', border: 'none', padding: '4px 10px',
+          borderRadius: 6, fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 4
+        }}
+      >
+        Complete Profile <ArrowRight size={12} />
+      </button>
+    </div>
+  );
+}
 
 function ProtectedRoute({ children, adminOnly = false }) {
   const { user, token } = useAuthStore();
@@ -36,6 +74,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ProfileAlert />
       <Toaster
         position="top-right"
         toastOptions={{

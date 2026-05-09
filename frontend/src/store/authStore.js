@@ -13,6 +13,13 @@ export const useAuthStore = create((set) => ({
     return res.data.user;
   },
 
+  googleLogin: async (credential) => {
+    const res = await api.post('/auth/google-login', { credential });
+    localStorage.setItem('token', res.data.token);
+    set({ user: res.data.user, token: res.data.token });
+    return res.data.user;
+  },
+
   logout: () => {
     localStorage.removeItem('token');
     set({ user: null, token: null });

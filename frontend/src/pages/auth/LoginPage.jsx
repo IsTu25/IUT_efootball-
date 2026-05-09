@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
 
@@ -7,8 +8,21 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuthStore();
+  const { login, googleLogin } = useAuthStore();
   const navigate = useNavigate();
+
+  const handleGoogleLogin = async (credential) => {
+    setLoading(true);
+    try {
+      await googleLogin(credential);
+      toast.success('Welcome back!');
+      navigate('/dashboard');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Google login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -91,6 +105,41 @@ export default function LoginPage() {
               ) : 'Sign In'}
             </button>
           </form>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '24px 0' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>OR</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <button 
+              type="button" 
+              className="btn btn-ghost" 
+              style={{ 
+                width: '100%', justifyContent: 'center', padding: '10px',
+                border: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)'
+              }}
+              onClick={() => {
+                // We'll use the official GoogleLogin component for better security
+              }}
+            >
+              <div id="google-login-target" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <GoogleLogin 
+                  onSuccess={credentialResponse => {
+                    handleGoogleLogin(credentialResponse.credential);
+                  }}
+                  onError={() => {
+                    toast.error('Google Login Failed');
+                  }}
+                  useOneTap
+                  theme="filled_black"
+                  shape="pill"
+                  width="376"
+                />
+              </div>
+            </button>
+          </div>
 
 
           {/* Register link */}

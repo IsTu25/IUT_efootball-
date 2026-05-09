@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
 import { Camera, User, Gamepad2, Smartphone, ChevronRight, ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import { POSITIONS } from '../../utils/constants';
 import api from '../../api/client';
 
@@ -34,7 +35,7 @@ function compressImage(file, maxSize = 400) {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const { login, googleLogin } = useAuthStore();
   const fileInputRef = useRef(null);
 
   const [step, setStep] = useState(1); // 1=Account, 2=Profile
@@ -52,6 +53,19 @@ export default function RegisterPage() {
     deviceName: '',
     bio: '',
   });
+
+  const handleGoogleLogin = async (credential) => {
+    setLoading(true);
+    try {
+      await googleLogin(credential);
+      toast.success('Welcome to the club!');
+      navigate('/dashboard');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Google registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -186,7 +200,28 @@ export default function RegisterPage() {
                 Next: Player Profile <ChevronRight size={16} />
               </button>
 
-              <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '16px 0' }}>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>OR</span>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <GoogleLogin 
+                  onSuccess={credentialResponse => {
+                    handleGoogleLogin(credentialResponse.credential);
+                  }}
+                  onError={() => {
+                    toast.error('Google registration failed');
+                  }}
+                  useOneTap
+                  theme="filled_black"
+                  shape="pill"
+                  width="416"
+                />
+              </div>
+
+              <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 12 }}>
                 Already have an account?{' '}
                 <Link to="/login" style={{ color: 'var(--accent-green)', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
               </p>
